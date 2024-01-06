@@ -1,0 +1,13 @@
+train: C:/Users/师晋武/PycharmProjects/valve/train-use/train/images
+val: C:/Users/师晋武/PycharmProjects/valve/train-use/valid/images
+test: C:/Users/师晋武/PycharmProjects/valve/train-use/test/images
+
+nc: 2
+names: ['empty', 'valve']
+
+roboflow:
+  workspace: test-viune
+  project: 2415
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/test-viune/2415/dataset/1
