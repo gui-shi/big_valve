@@ -56,7 +56,7 @@ async def predict_stream(url: str, debug=False):
             logger.error("Not frame!")
             continue
 
-        logger.info(hashlib.md5(frame).hexdigest())
+        # logger.info(hashlib.md5(frame).hexdigest())
 
         np_image = np.frombuffer(frame, np.uint8).reshape([TARGET_HIGH, TARGET_WIDTH, 3])
 
@@ -91,6 +91,8 @@ async def predict_np_image(image: np.array, frame_id=-1, debug=False) -> float o
 
         valve_mask = masks.data.cpu().numpy()[0].astype(np.uint8)
 
+        logger.info(masks.data.cpu().numpy().shape)
+
         mask_pixel = np.count_nonzero(valve_mask)
 
         # 计算轮廓
@@ -104,11 +106,16 @@ async def predict_np_image(image: np.array, frame_id=-1, debug=False) -> float o
             largest_contour = largest_contour.squeeze()
             # 根据轮廓计算外接圆
             (x, y), radius = cv2.minEnclosingCircle(largest_contour)
-            valve_mask_result = valve_mask.copy() * 255
+            valve_mask_result = valve_mask.copy()
             # 在图形上绘制外接圆
-            cv2.circle(valve_mask_result, (int(x), int(y)), int(radius), 255, 2)
+            cv2.circle(valve_mask_result, (int(x), int(y)), int(radius), 1, 2)
+
+            rgb_mask_pic = cv2.cvtColor(valve_mask_result, cv2.COLOR_GRAY2RGB)
+            rgb_mask_pic[valve_mask_result == 0] = 255
+            rgb_mask_pic[valve_mask_result == 1] = [0xBB, 0xC5, 0x39]
+
             if debug:
-                cv2.imwrite(f"test/{frame_id}_result.bmp", valve_mask_result)
+                cv2.imwrite(f"test/{frame_id}_result.bmp", rgb_mask_pic)
                 cv2.imwrite(f"test/{frame_id}.bmp", image)
             # 计算外接圆的面积
             circle_area = np.pi * (radius ** 2)
@@ -117,7 +124,7 @@ async def predict_np_image(image: np.array, frame_id=-1, debug=False) -> float o
             # cv2.imshow("test", best_result.plot())
             # cv2.waitKey()
 
-            await server.send_predict_result(percent, best_result.orig_img, valve_mask_result)
+            await server.send_predict_result(percent, best_result.orig_img, rgb_mask_pic)
 
             logger.success(f"Open percent is: {percent:.3%}")
 
