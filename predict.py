@@ -66,7 +66,7 @@ async def predict_stream(url: str, debug=False):
         percent = await predict_np_image(np_image, frame_seq, debug=debug)
 
         logger.info(f"frame:{frame_seq}, percent:{percent}")
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.5)
 
 
 async def predict_np_image(image: np.array, frame_id=-1, debug=False) -> float or None:
@@ -111,7 +111,7 @@ async def predict_np_image(image: np.array, frame_id=-1, debug=False) -> float o
             cv2.circle(valve_mask_result, (int(x), int(y)), int(radius), 1, 2)
 
             rgb_mask_pic = cv2.cvtColor(valve_mask_result, cv2.COLOR_GRAY2RGB)
-            rgb_mask_pic[valve_mask_result == 0] = 255
+            rgb_mask_pic[valve_mask_result == 0] = [0xF2, 0xEB, 0xB2]
             rgb_mask_pic[valve_mask_result == 1] = [0xBB, 0xC5, 0x39]
 
             if debug:
