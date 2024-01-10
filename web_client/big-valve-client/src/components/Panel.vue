@@ -2,7 +2,7 @@
   <v-container>
     <v-card>
       <v-card-title>
-        实时状态
+      <v-icon>mdi-chart-box-outline</v-icon> 实时状态
       </v-card-title>
       <v-card-text>
         <v-row>
@@ -23,7 +23,7 @@
             <v-card title="阀门状态">
               <v-card-text>
                 <p class="text-body-1">闭合度：{{ percent / 10 }} %</p>
-                <v-progress-linear color="primary" rounded :model-value="percent/10" :height="24"></v-progress-linear>
+                <v-progress-linear color="teal" rounded :model-value="percent/10" :height="24"></v-progress-linear>
                 <v-divider :thickness="2" class="my-2"></v-divider>
                 <p class="text-body-1">当前状态：
                   <v-icon>{{ status_table[valveStatus]['icon'] }}</v-icon>
@@ -33,11 +33,11 @@
             </v-card>
           </v-col>
           <v-col :cols="4">
-            <v-card title="数据状态">
+            <v-card title="交互状态">
               <v-card-text>
-                <p class="text-body-1">message count: {{ msgCounter }}</p>
-                <p class="text-body-1">origin Content-Length: {{ originImageLen }}</p>
-                <p class="text-body-1">masked Content-Length: {{ maskedImageLen }}</p>
+                <p class="text-body-1">message count: {{ msgCounter }} times predict</p>
+                <p class="text-body-1">origin Content-Length: {{ originImageLen }} bytes</p>
+                <p class="text-body-1">masked Content-Length: {{ maskedImageLen }} bytes</p>
                 <p>sys time: {{ new Date().toLocaleTimeString()}}</p>
               </v-card-text>
             </v-card>

@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar color="primary" :elevation="2">
+    <v-app-bar color="teal" :elevation="2">
       <v-app-bar-nav-icon>
         <v-icon>mdi-valve</v-icon>
       </v-app-bar-nav-icon>
@@ -9,7 +9,9 @@
     <v-main>
       <Panel/>
     </v-main>
-    <v-footer>LICENSE under GPLv3, github.com/gui-shi/big_valve</v-footer>
+    <v-footer :elevation="2">
+      <span class="text-body-1">B<span class="text-purple">iiiiiiii</span>g valve powered by shigelan & Gaein nidb</span>
+    </v-footer>
   </v-app>
 </template>
 
