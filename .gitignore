@@ -1,9 +1,8 @@
 **/**.pt
 ./test/**
-./train-use/image-scripts/**/*.mp4
-./train-use/image-scripts/**/*.mkv
-./train-use/image-scripts/**/*.png
-./train-use/image-scripts/**/*.zip
+/train-use/image-scripts/*
+!/train-use/image-scripts/topic.ps1
+
 
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=pycharm,python
