@@ -1,5 +1,7 @@
 import asyncio
 import math
+from typing import List, Literal
+
 import cv2
 import numpy
 import websockets
@@ -34,48 +36,55 @@ async def server(websocket):
         pass
 
 
-def package_images_result(percent_value: float, origin_img: numpy.array, masked_img: numpy.array) -> bytes:
+def package_images_result(percent_value: int,
+                          images: List[tuple[Literal["webp", "jpg", "null"], numpy.array]]) -> bytes:
     """
-    Websocket 二进制包
-    | 百分比     | 原图长度                      | 掩码图长度                 | 原图二进制 | 掩码图二进制 |
-    | percent   | Content-Length of origin     | Content-Length of masked  | origin    | masked    |
-    | 16bit     | 32bit                        | 32bit                     | val     | val        |
+    WebSocket 二进制包
+                          |-------------------循环出现-------------------|
+    | 百分比     | 图片数量 | 图片格式 | 图片长度        | 图片二进制         |
+    | percent   | images  | format  | Content-Length | Binary of images |
+    | 16bit     | 16bit   | 32bit   | 32bit          | val              |
     """
-    bit_of_percent = 16
-    bit_of_content_length = 32
-    origin_convert, origin_img_bin = cv2.imencode(".jpg", origin_img)
-    masked_convert, masked_img_bin = cv2.imencode(".webp", masked_img)
+    byte_of_percent = 2
+    byte_of_count = 2
+    byte_of_format = 4
+    byte_of_content_length = 4
 
-    if not origin_convert:
-        logger.error(f"origin image convert failed!")
-    if not masked_convert:
-        logger.error(f"masked image convert failed!")
+    empty = 0x00
 
-    origin_img_bin = origin_img_bin.tobytes()
-    masked_img_bin = masked_img_bin.tobytes()
+    binary_list = []
+    for fmt, image in images:
+        # 添加图片格式字段
+        binary_list.append(fmt.encode("ascii").zfill(byte_of_format))
+        if image is None:
+            # 无图片，添加0作为长度
+            binary_list.append(empty.to_bytes(byte_of_content_length, "big"))
+        else:
+            conv_result, coded_image = cv2.imencode(f".{fmt}", image)
+            if not conv_result:
+                # 转换失败，添加0作为长度
+                logger.error("Image convert failed!")
+                binary_list.append(empty.to_bytes(byte_of_content_length, "big"))
+            else:
+                # 转换成功，添加真实长度和二进制
+                image_bin = coded_image.tobytes()
+                image_len = len(image_bin).to_bytes(byte_of_content_length, "big")
+                logger.info(f"Picture length: {image_len}")
+                binary_list.append(image_len)
+                binary_list.append(image_bin)
 
-    origin_img_len = len(origin_img_bin)
-    masked_img_len = len(masked_img_bin)
-
-    if origin_img_len == 0:
-        logger.warning("origin image size 0")
-    if masked_img_len == 0:
-        logger.warning("masked image size 0")
-
-    metadata_bin = BitArray(
-        (f'int:{bit_of_percent}={percent_value},'
-         f'int:{bit_of_content_length}={origin_img_len},'
-         f'int:{bit_of_content_length}={masked_img_len}'))
-
-    packet_bin = (metadata_bin + BitArray(bytes=origin_img_bin) + BitArray(bytes=masked_img_bin)).tobytes()
-    return packet_bin
+    logger.info(f"Add meta, image cnt: {len(images)}, percent: {percent_value}")
+    binary_list.insert(0, len(images).to_bytes(byte_of_count, "big"))
+    binary_list.insert(0, percent_value.to_bytes(byte_of_percent, "big"))
+    image_bin_seq = b''.join(binary_list)
+    return image_bin_seq
 
 
 async def send_predict_result(percent_value: int, origin_img: numpy.array, masked_img: numpy.array):
     if percent_value is None:
         logger.error("Argument percent can not be None.")
 
-    packet_bin = package_images_result(percent_value, origin_img, masked_img)
+    packet_bin = package_images_result(percent_value, [("jpg", origin_img), ("webp", masked_img)])
 
     logger.info(f"packet data, len:{len(packet_bin)}")
 

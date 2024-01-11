@@ -87,7 +87,7 @@ async def result(mask: np.array, debug=False) -> (float or None, np.array):
 
     # 计算轮廓
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    if len(contours) < 0:
+    if len(contours) <= 0:
         logger.error("No counters found.")
         return None, None
     else:
@@ -115,8 +115,8 @@ async def predict_np_image_to_mask(image: np.array) -> np.array or None:
 
     # 过滤推理结果
     result_list = []
-    for result in results:
-        result_list.append(result)
+    for predict_result in results:
+        result_list.append(predict_result)
 
     if len(result_list) == 0:
         logger.warning("No valve detected.")

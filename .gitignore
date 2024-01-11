@@ -1,6 +1,9 @@
 **/**.pt
-./test/**
+/test/*
 /train-use/image-scripts/*
+/train-use/runs
+/train-use/train
+/train-use/test
 !/train-use/image-scripts/topic.ps1
 
 
